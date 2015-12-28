@@ -61,7 +61,8 @@ int Rdutil::printtofile(const std::string &filename) {
 //if f returns nonzero, something is wrong.
 //returns how many times the function was invoked.
 template<typename Function>
-int applyactiononfile(std::vector<Fileinfo> &m_list, Function f) {
+int applyactiononfile(std::vector<Fileinfo> &m_list, Function f,
+                      bool dont_touch_original) {
 
     std::vector<Fileinfo>::iterator it,src;
     src=m_list.end();
@@ -77,7 +78,8 @@ int applyactiononfile(std::vector<Fileinfo> &m_list, Function f) {
 	  cerr<<"hmm. this file should have positive identity."<<endl;
 
       } else if(it->getduptype()==Fileinfo::DUPTYPE_OUTSIDE_TREE
-		||it->getduptype()==Fileinfo::DUPTYPE_WITHIN_SAME_TREE ) {
+		|| (it->getduptype()==Fileinfo::DUPTYPE_WITHIN_SAME_TREE 
+                    && !dont_touch_original) ) {
 	//double check that "it" shall be ~linked to "src"
 	if(it->identity()== -src->identity()) {
 	  //everything is in order. we may now ~link it to src.
@@ -129,32 +131,35 @@ public:
   }
 };
 
-int Rdutil::deleteduplicates(bool dryrun) {
+int Rdutil::deleteduplicates(bool dryrun, bool dont_touch_original) {
   if(dryrun){
     dryrun_helper<std::ostream> obj(cout,"delete ","","");
     obj.disableBname();
-    return applyactiononfile(m_list,obj);
+    return applyactiononfile(m_list,obj,dont_touch_original);
   }
   else
-    return applyactiononfile(m_list,&Fileinfo::static_deletefile);
+    return applyactiononfile(m_list,&Fileinfo::static_deletefile,
+                             dont_touch_original);
 }
 
-int Rdutil::makesymlinks(bool dryrun) {
+int Rdutil::makesymlinks(bool dryrun, bool dont_touch_original) {
   if(dryrun){
     dryrun_helper<std::ostream> obj(cout,"symlink "," to ","");
-    return applyactiononfile(m_list,obj);
+    return applyactiononfile(m_list,obj,dont_touch_original);
   }
   else
-  return applyactiononfile(m_list,&Fileinfo::static_makesymlink);
+  return applyactiononfile(m_list,&Fileinfo::static_makesymlink,
+                           dont_touch_original);
 }
 
-int Rdutil::makehardlinks(bool dryrun) {
+int Rdutil::makehardlinks(bool dryrun, bool dont_touch_original) {
   if(dryrun){
     dryrun_helper<std::ostream> obj(cout,"hardlink "," to ","");
-    return applyactiononfile(m_list,obj);
+    return applyactiononfile(m_list,obj,dont_touch_original);
   }
   else
-  return applyactiononfile(m_list,&Fileinfo::static_makehardlink);
+  return applyactiononfile(m_list,&Fileinfo::static_makehardlink,
+                           dont_touch_original);
 }
 
 //mark files with a unique number

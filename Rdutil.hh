@@ -89,13 +89,13 @@ public:
 		    long nsecsleep=0);
   
   //make symlinks of duplicates.
-  int makesymlinks(bool dryrun);
+  int makesymlinks(bool dryrun, bool dont_touch_original);
 
   //make hardlinks of duplicates.
-  int makehardlinks(bool dryrun);
+  int makehardlinks(bool dryrun, bool dont_touch_original);
 
   //delete duplicates.
-  int deleteduplicates(bool dryrun);
+  int deleteduplicates(bool dryrun, bool dont_touch_original);
 
   //a little helper class 
   class adder_helper {

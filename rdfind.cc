@@ -91,6 +91,7 @@ void usage()
   cout<<" -makesymlinks      true |(false) replace duplicate files with symbolic links"<<endl;
   cout<<" -makehardlinks     true |(false) replace duplicate files with hard links"<<endl;
   cout<<" -deleteduplicates  true |(false) delete duplicate files"<<endl;
+  cout<<" -donttouchoriginal true |(false) don't touch original"<<endl;
   cout<<" -ignoreempty      (true)| false  ignore empty files"<<endl;
   cout<<" -removeidentinode (true)| false  ignore files with nonunique device and inode"<<endl;
   cout<<" -makeresultsfile  (true)| false  makes a results file"<<endl;
@@ -142,6 +143,7 @@ int main(int narg, char *argv[])
   bool usemd5=false;//use md5 checksum to check for similarity
   bool usesha1=false;//use sha1 checksum to check for similarity
   long nsecsleep=0; //number of nanoseconds to sleep between each file read.
+  bool dont_touch_original=false;
 
   string resultsfile="results.txt";//results file name.
 
@@ -217,7 +219,18 @@ int main(int narg, char *argv[])
 	  cerr<<"expected true or false, not \""<<nextarg<<"\""<<endl;
 	  return -1;
 	}
-      } 
+      }
+      else if (arg=="-donttouchoriginal" && n<(narg-1)) {
+	string nextarg(argv[n+1]);n++;
+	if (nextarg=="true")
+	  dont_touch_original=true;
+	else if (nextarg=="false")
+	  dont_touch_original=false;
+	else {
+	  cerr<<"expected true or false, not \""<<nextarg<<"\""<<endl;
+	  return -1;
+	}
+      }
       else if (arg=="-followsymlinks" && n<(narg-1)) {
 	string nextarg(argv[n+1]);n++;
 	if (nextarg=="true")
@@ -484,7 +497,7 @@ int main(int narg, char *argv[])
   //traverse the list and replace with symlinks
   if(makesymlinks) {
      cout<<dryruntext<<"Now making symbolic links. creating "<<endl;
-    int tmp=gswd.makesymlinks(dryrun);
+    int tmp=gswd.makesymlinks(dryrun, dont_touch_original);
     cout<<"Making "<<tmp<<" links."<<endl;
     return 0;
   }
@@ -492,7 +505,7 @@ int main(int narg, char *argv[])
   //traverse the list and replace with symlinks
   if(makehardlinks) {
     cout<<dryruntext<<"Now making hard links."<<endl;
-    int tmp=gswd.makehardlinks(dryrun);
+    int tmp=gswd.makehardlinks(dryrun, dont_touch_original);
     cout<<"Making "<<tmp<<" links."<<endl;
     return 0;
   }
@@ -500,7 +513,7 @@ int main(int narg, char *argv[])
  //traverse the list and delete files
   if(deleteduplicates) {
     cout<<dryruntext<<"Now deleting duplicates:"<<endl;
-    int tmp=gswd.deleteduplicates(dryrun);
+    int tmp=gswd.deleteduplicates(dryrun, dont_touch_original);
     cout<<"Deleted "<<tmp<<" files."<<endl;
     return 0;
   }
